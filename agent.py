@@ -5,7 +5,7 @@ import random
 import torch
 
 class agent:
-    def __init__(self, action_size, batch_size=32, gamma=0.99, lr=0.001, ):
+    def __init__(self, action_size, batch_size=32, gamma=0.99, lr=0.001, epsilon = 1.0, epsilon_decay = 0.000009, epsilon_min = 0.1):
         self.action_size = action_size
         self.policy = dqn.DQN(action_size)
         self.target = dqn.DQN(action_size)
@@ -15,11 +15,14 @@ class agent:
         self.lr = lr
         self.steps = 0
         self.optimizer = RMSprop(self.policy.parameters(), lr=self.lr)
+        self.lossfn = torch.nn.SmoothL1Loss()
+        self.epsilon = epsilon
+        self.epsilon_decay = epsilon_decay
 
-    def select_action(self, state, epsilon):
-        current_epsilon = epsilon* (self.gamma ** self.steps)
+    def select_action(self, state):
+        self.epsilon = self.epsilon - self.epsilon_decay if self.epsilon > self.epsilon_min else self.epsilon_min
         self.steps += 1
-        if random.random() > epsilon:
+        if random.random() > self.epsilon:
             with torch.no_grad():
                 state = torch.FloatTensor(state)
                 q_values = self.policy(state)
@@ -47,3 +50,11 @@ class agent:
         if dones.any():
             q_next[dones] = 0.0
         q_target = rewards + self.gamma * q_next
+        loss = self.lossfn(q_pred, q_target)
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+    def update_target_network(self):
+        self.target.load_state_dict(self.policy.state_dict())
