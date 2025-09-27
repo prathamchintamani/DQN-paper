@@ -1,4 +1,4 @@
-import DQN as dqn
+from DQN import DQN
 import replay
 from torch.optim import RMSprop
 import random
@@ -7,8 +7,8 @@ import torch
 class agent:
     def __init__(self, action_size, batch_size=32, gamma=0.99, lr=0.001, epsilon = 1.0, epsilon_decay = 0.000009, epsilon_min = 0.1):
         self.action_size = action_size
-        self.policy = dqn.DQN(action_size)
-        self.target = dqn.DQN(action_size)
+        self.policy = DQN(action_size)
+        self.target = DQN(action_size)
         self.memory = replay.ReplayBuffer(10000)
         self.batch_size = batch_size
         self.gamma = gamma 
