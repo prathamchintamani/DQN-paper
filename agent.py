@@ -18,6 +18,7 @@ class agent:
         self.lossfn = torch.nn.SmoothL1Loss()
         self.epsilon = epsilon
         self.epsilon_decay = epsilon_decay
+        self.epsilon_min = epsilon_min
 
     def select_action(self, state):
         self.epsilon = self.epsilon - self.epsilon_decay if self.epsilon > self.epsilon_min else self.epsilon_min
